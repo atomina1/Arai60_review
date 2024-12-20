@@ -42,9 +42,9 @@ class Solution:
 
 思考ログ
 - Araiさんの解説と他の人の答えを見る
-- 重複が無くなるまでポインタを飛ばすというのは思いついていたけど実装の仕方がよくわからなくて考えていなかったし先頭から重複が始まるケースは完全に見落としていた
+- 重複が無くなるまでポインタを飛ばすというのは実装の仕方がよくわからなくて考えていなかったし先頭から重複が始まるケースは完全に考えていなかった
+- ChatGPTも違うコード返すからおもしろい
 
-'''python
 # Definition for singly-linked list.
 # class ListNode:
 #     def __init__(self, val=0, next=None):
@@ -52,25 +52,26 @@ class Solution:
 #         self.next = next
 class Solution:
     def deleteDuplicates(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        if not head:
-            return head
+        dummy = ListNode(0)
+        dummy.next = head
+        curr = dummy 
 
-        current = head
-
-        while current.next:
-            if current.val == current.next.val:
-                current.next = current.next.next
+        while curr.next and curr.next.next:
+            if curr.next.val == curr.next.next.val:
+                running = curr.next
+                num = running.val
+                while running and running.val == num:
+                    running = running.next
+                curr.next = running
             else:
-                current = current.next
-        return head
-'''
+                curr = curr.next
+
+        return dummy.next
 
 # Step3
 思考ログ
-- 上のコードはcurrentにheadを代入してcurrentのnextを書き換えているのにいつの間にかheadも書き変わっていて不自然に感じる
-- while文の条件を書き直せばもう少し自分にとってはわかりやすくはなった気がする? currentにheadというlistnodeを代入していて、headをwhile文で書き換えているので最終的に欲しいものはcurrentに入っていると思える
+- 上のコードを再現しようとしたらwhile running and running.val == numのうちrunningを忘れてTLEになった 反省
 
-'''python
 # Definition for singly-linked list.
 # class ListNode:
 #     def __init__(self, val=0, next=None):
@@ -78,11 +79,14 @@ class Solution:
 #         self.next = next
 class Solution:
     def deleteDuplicates(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        current = head
-        while head and head.next:
-            if head.val == head.next.val:
-                head.next = head.next.next
+        dummy = ListNode(-1, head)
+        curr = dummy
+
+        while dummy.next and dummy.next.next:
+            if dummy.next.val != dummy.next.next.val:
+                dummy = dummy.next
             else:
-                head = head.next
-        return current
-'''
+                remove = dummy.next.val
+                while dummy.next and dummy.next.val == remove:
+                    dummy.next = dummy.next.next
+        return curr.next
